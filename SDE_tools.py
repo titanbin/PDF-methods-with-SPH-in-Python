@@ -18,6 +18,7 @@ def predictor(funcs,y,dt,dW,means):
         pred_y = y[i] + f(y[i],means[:,i]) * dt + g(y[i],means[:,i]) * dW[i]
 
         if pred_y[3] < 0:
+            print('pred')
             pred_y[3] = y[i,3]
 
         res[i] = pred_y
@@ -39,6 +40,7 @@ def corrector(funcs,y,pred_y,dt,dW,means,pred_means,alpha=0.5,beta=0.5):
         new_y[0] = new_y[0] % L#Periodic conditions
 
         if new_y[3] < 0:
+            print('corr')
             new_y[3] = y[i,3]
 
         res[i] = new_y
@@ -316,8 +318,9 @@ def run(mode,result,N,Nt,dt,omega_mean,dW,save=False,output_step=0,sph_means=Tru
         result_means[t] = means2
 
         if output_step != 0 and t % output_step == 0:
-            tqdm.write("{}/{} | <uv(t)> - <uv(0)> = {:.4f}, <uv(t)> = {:.4f}".format(t,Nt,np.mean(result[t,:,1])-np.mean(result[0,:,1]),np.mean(result[t,:,1])))
-            tqdm.write("{}/{} | <w(t)> - <w(0)> = {:.4f}, <w(t)> = {:.4f}".format(t,Nt,np.mean(result[t,:,3])-np.mean(result[0,:,3]),np.mean(result[t,:,3])))
+            tqdm.write("{}/{} | <uv(t)> - <uv(0)> = {:.4f}, var(uv(t)) = {:.4f}".format(t,Nt,np.mean(result[t,:,1])-np.mean(result[0,:,1]),np.var(result[t,:,1])))
+            tqdm.write("{}/{} | <uh(t)> - <uh(0)> = {:.4f}, var(uh(t)) = {:.4f}".format(t,Nt,np.mean(result[t,:,2])-np.mean(result[0,:,2]),np.var(result[t,:,2])))
+            tqdm.write("{}/{} | <w(t)> - <w(0)>   = {:.4f}, <w(t)> = {:.4f}, var(w(t))  = {:.4f}".format(t,Nt,np.mean(result[t,:,3])-np.mean(result[0,:,3]),np.mean(result[t,:,3]),np.var(result[t,:,3])))
 
     if save:
         np.savez('results/{}_N{}k_Nt{}k_w{:.4f}.npz'.format(mode,int(N/1000),int(Nt/1000),omega_mean),[N,Nt,dt],result,result_means)
