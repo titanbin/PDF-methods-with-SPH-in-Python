@@ -8,7 +8,6 @@ def means_graph(y,parameters,save=False):
     #____________________________________
     #Plot global mean values of x,uv,uh,ω
     #____________________________________
-    y = y[:,:,0]
     Nt,N,dt,mode = parameters
     fig,ax = plt.subplots(2,2,figsize=(10,10))
     t = np.linspace(0,Nt*dt,Nt)
@@ -114,12 +113,14 @@ def autocorrelation_graph(y,parameters,save=False):
         plt.savefig('figs/autocorrelation_{}_N{}k_Nt{}k.png'.format(mode,int(N/1000),int(Nt/1000)),dpi=200)
     plt.show()
 
-def SPH_means_graph(x,means,parameters,save=False):
+def SPH_means_graph(y,means,parameters,save=False):
     #_________________________________
     #Plot SPH mean values of x,uv,uh,ω
     #_________________________________
     Nt,N,dt,mode = parameters
     fig,ax = plt.subplots(2,2,figsize=(10,10))
+
+    x = y[:,:,0]
 
     rho_mean = means[:,0,:]
     uv_mean = means[:,1,:]
@@ -189,12 +190,12 @@ def pdfs_graph(y,parameters,save=False):
         pdfs = []
         for t in ts:
             x = np.mean(q[t-int(steps/4):t+int(steps/4)+1,:],axis=0)
-            hist = np.histogram(x,bins=75,range=r)
+            hist = np.histogram(x,bins=100,range=r)
             hist = (hist[0]/N,hist[1])
             pdfs.append(hist)
         return pdfs
     
-    def plot(pdfs,pdf_type,save):
+    def plot(pdfs,pdf_type,pdf_type_latex,save):
         gs = grid_spec.GridSpec(len(pdfs),1)
         fig = plt.figure(figsize=(10,13))
         axs = []
@@ -229,10 +230,10 @@ def pdfs_graph(y,parameters,save=False):
                 axs[i].set_xticks([])
             
         fig.patch.set_facecolor('black')
-        fig.text(0.5,0.9,pdf_type,color="white",fontsize=20,ha='center')
+        fig.text(0.5,0.9,pdf_type_latex,color="white",fontsize=20,ha='center')
         gs.update(hspace=-0.8)
         if save:
-            plt.savefig('figs/{}_pdf_{}_N{}k_Nt{}k.png'.format(mode,int(N/1000),int(Nt/1000)),dpi=200)
+            plt.savefig('figs/{}_pdf_{}_N{}k_Nt{}k.png'.format(pdf_type,mode,int(N/1000),int(Nt/1000)),dpi=200)
         plt.show()
     
     Nt,N,dt,mode = parameters
@@ -244,7 +245,7 @@ def pdfs_graph(y,parameters,save=False):
 
     steps = Nt//50
     uv_pdfs = get_pdf(y[:,:,1],t0=steps//2,steps=steps,r=(uv_mean - uv_std*5,uv_mean + uv_std*5))
-    omega_pdfs = get_pdf(y[:,:,3],t0=steps//2,steps=steps,r=(0,omega_mean + omega_std*10))
+    omega_pdfs = get_pdf(y[:,:,3],t0=steps//2,steps=steps,r=(0,omega_mean + omega_std*5))
 
-    plot(uv_pdfs,'uv',save)
-    plot(omega_pdfs,'omega',save)
+    plot(uv_pdfs,'uv',r'$u_v$',save)
+    plot(omega_pdfs,'omega',r'$\omega$',save)
